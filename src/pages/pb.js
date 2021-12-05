@@ -1,21 +1,58 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { useQuery, gql } from '@apollo/client';
+
+import Button from '../components/Button';
+
+// const OPTION_READ = gql`
+//     query read($id: ID!) {
+//         read(id: $id) {
+//             resource
+//             author
+//             name
+//             methodName
+//             id
+//             destination
+//             createdAt
+//         }
+//     }
+// `;
+
+const OPTION_READ_ALL = gql`
+    query readAll($author: String) {
+        readAll(author: $author) {
+            id
+            author
+            destination
+            name
+            methodName
+            resource
+            createdAt
+            updatedAt
+            baseURL
+        }
+    }
+`;
 
 const pbAPI = () => {
+    const { data, loading, error, fetchMore } = useQuery(OPTION_READ_ALL);
+
     useEffect(() => {
         // Обновляем заголовок документа
-        document.title = 'nginx API — public data';
+        document.title = 'Настройки Шины - пакеты';
     });
+
+    if (loading) return <p>загрузка...</p>;
+    if (error) return (<p>ошибка...</p>);
+
     return (
         <div>
-            <h1>Пакеты публикации</h1>
             <p>Здесь настройки для пакетов публикаций</p>
-            <ul>
-                <li>Пакеты публикации</li>
-                <li><Link to="/sv">Управляемые сервисы</Link></li>
-                <li><Link to="/ws">Web-сервисы</Link></li>
-                <li><Link to="/hs">Http-сервисы</Link></li>
-            </ul>
+            <Button>Жми</Button>
+            {data.readAll.map(option => (
+                <div key={option.id}>{option.author}</div>
+            ))}
+
         </div>
     );
 };
