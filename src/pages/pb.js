@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { useQuery, gql } from '@apollo/client';
 
-import Button from '../components/Button';
+import OptionFeed from '../components/OptionFeed';
+import styled from "styled-components";
+import {format} from "date-fns";
+import Button from "../components/Button";
 
 // const OPTION_READ = gql`
 //     query read($id: ID!) {
@@ -19,23 +21,60 @@ import Button from '../components/Button';
 // `;
 
 const OPTION_READ_ALL = gql`
-    query readAll($author: String) {
-        readAll(author: $author) {
+    query readAll($resource: Resource) {
+        readAll(resource: $resource) {
             id
             author
             destination
             name
-            methodName
-            resource
-            createdAt
             updatedAt
             baseURL
         }
     }
 `;
 
+const StyledOption = styled.article`
+    max-width: 800px;
+    margin: 0 auto;
+`;
+
+const MetaData = styled.div`
+    @media (min-width: 800px) {
+      display: flex;
+      align-items: top;
+    }
+`;
+
+const MetaInfo = styled.div`
+    padding-right: 7px;
+`;
+
+const UserActions = styled.div`
+    margin-left: auto;
+`;
+
+const SmallLabel = styled.div`
+    width: 40px;
+    border: 0px;
+    padding: 5px;
+    
+`;
+
+const MediumLabel = styled.div`
+    width: 90px;
+    border: 0px;
+    padding: 5px;
+`;
+
+const LargeLabel = styled.div`
+    width: 220px;
+    border: 0px;
+    padding: 5px;
+`;
+
 const pbAPI = () => {
-    const { data, loading, error, fetchMore } = useQuery(OPTION_READ_ALL);
+    const resource = 'pb';
+    const { data, loading, error, fetchMore } = useQuery(OPTION_READ_ALL, { variables: { resource } });
 
     useEffect(() => {
         // Обновляем заголовок документа
@@ -43,16 +82,27 @@ const pbAPI = () => {
     });
 
     if (loading) return <p>загрузка...</p>;
-    if (error) return (<p>ошибка...</p>);
+    if (error) return <p>ошибка...</p>;
 
     return (
         <div>
-            <p>Здесь настройки для пакетов публикаций</p>
-            <Button>Жми</Button>
-            {data.readAll.map(option => (
-                <div key={option.id}>{option.author}</div>
-            ))}
-
+            <StyledOption>
+                <MetaData>
+                    <MetaInfo>
+                        <SmallLabel>Назначение</SmallLabel>
+                        <LargeLabel>Имя типа</LargeLabel>
+                        <LargeLabel>URL базы разработчика</LargeLabel>
+                        <MediumLabel>Автор</MediumLabel>
+                        <MediumLabel>Дата</MediumLabel>
+                    </MetaInfo>
+                    <UserActions>
+                        <Button>
+                            Добавить
+                        </Button>
+                    </UserActions>
+                </MetaData>
+            </StyledOption>
+            <OptionFeed options={data.readAll} />
         </div>
     );
 };
